@@ -1,0 +1,9 @@
+That is my special test text:
+
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+abcdefghijklmnopqrstuvwxyz
+öäüÖÄÜß
+@!"§$%&/()=?{[]}²³#+'*~<>|;:_,.-µ
+
+What was the name of the movie ?? The 6th day
+

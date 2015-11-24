@@ -1,0 +1,490 @@
+% Prime Shuffle Crypto
+%
+% Jupiter Programs
+%
+% Ralf Peine
+% Emil-von-Behring-Str.16
+% 46397 Bocholt
+% Germany
+%
+
+\documentclass{article}
+
+\usepackage{makeidx}  % allows for indexgeneration
+
+\begin{document}
+
+\section{Prime Shuffle: A New Type of Cryptographic
+Algorithm
+\label{Prime_Shuffle:_A_New_Type_of_Cryptographic_Algorithm}
+\index{Prime Shuffle: A New Type of Cryptographic Algorithm}}
+
+\subsection*{Abstract\label{Abstract}\index{Abstract}}
+
+Linear congruential generators (LCGs) represent one of the oldest and
+best-known pseudorandom number generator algorithms. Prime Shuffle
+($PS$) creates a bijective transformation vector $T$ to shuffle bits
+of given data by using a subset of all LCGs builded out of prime
+numbers. The trick is to create a sequence using LCGs and change the
+used prime numbers in every step $n$ depending on bytes of the key $K$
+which is created by a secret password $PW$, a random number $RN$ and
+such many other keys $K_i$ as you like. The algorithm is symmetric and
+has a variable block length of normally 1 000 000 bits (or more up to
+10 000 000), the key $K$ is not mixed with the original or crypted
+data, $K$ is only part of the algorithm! So neither the key nor the
+password or hashes of it have to be saved on a permanent medium, they
+are only needed in RAM. Just the random number and the additional keys
+$K_i$ have to be stored: The random number together with the data as
+crypted file, the additional keys anywhere.
+
+Prime Shuffle is easy to implement and has high costs for performance
+and memory, but this was the design goal to hamper brute force
+attacs.
+
+\subsubsection*{History\label{History}\index{History}}\begin{itemize}
+\item 
+
+11.02.2007 update by variant submitted to \newline
+Fast Software Encryption 2007, http://fse2007.uni.lu/
+
+\item 
+
+25.11.2006 update to fit implementation 
+
+\item 
+
+15.03.2006 add more descriptions
+
+\item 
+
+07.03.2006 use LCG for pseudorandom number generator
+
+\item 
+
+05.03.2006 first published
+
+\end{itemize}
+\subsection*{Autor\label{Autor}\index{Autor}}\begin{verbatim}
+ Ralf Peine <ralf.peine@jupiter-programs.de>
+\end{verbatim}
+\begin{verbatim}
+ Jupiter-Programs
+\end{verbatim}
+\begin{verbatim}
+Bocholt
+Germany
+\end{verbatim}
+\section{Description\label{Description}\index{Description}}
+
+Look at the following linear congruential generator (LCG, see \cite{Wi}) like
+described in \cite{Ba}:
+
+\begin{equation}
+a_n = (mul * a_{n-1} + add) \; \% \; mod
+\end{equation}
+
+(\% is used for modulo division like operator \% in C or perl)
+
+$add$, $mul$ and $mod$ are given as prime numbers ($P_r$) between 
+$P_rmin$ and $P_rmax$ with
+
+\begin{equation}
+P_rmin=\mbox{1 000 000 and }P_rmax=\mbox{10 000 000}
+\end{equation}
+
+\vspace{0.5em}
+
+(only bounded by processor architecture (32-bit) and programming
+language).
+
+Now think about different values for $add_n$, $mul_n$ and $mod_n$ for
+every $n$:
+
+\begin{equation}
+a_n = (mul_n * a_{n-1} + add_n) \; \% \; mod_n
+\end{equation}
+
+$add_n$, $mul_n$ and $mod_n$ can be calculated by a secret password
+$PW$, a random number $RN$ and such many other keys $K_i$ as you like
+with $M_c$ (MaxChars) $\ge$ 1000 bytes.
+
+\subsection{Preparation}
+
+Longer $PW$ by itself up to $M_c$ chars. Combine $PW$, $RN$ and $K_e$
+$\forall e$ to the key $K$ by bitwise XOR. Fill up the data $D$ up to
+128 kByte by random values.
+
+\subsection{Basic Algorithm}
+
+Now use the integers $I_{i_n}$, $I_{j_n}$ and $I_{l_n}$ build out of
+$K$ and add it to the indices $i_n$, $j_n$ and $l_n$ in the prime
+number list to get $add_n$, $mul_n$ and $mod_n$ for the next step.
+
+\subsubsection{Startup Values}
+
+are given as:
+
+\begin{eqnarray}
+ i_0 & = & 0 \\
+ j_0 & = & 0 \\
+ l_0 & = & 0 \\
+ k_{i_0} & = & -5 \\
+ k_{j_0} & = & -2 \\
+ k_{l_0} & = & 1 \\
+ a_{0} & = & (K[0] * 256^3 + K[1] * 256^2 + K[2] * 256 + K[3])  \; \% \; length\\
+ a_{\delta_0} & = & 0;
+\end{eqnarray}
+
+$K[i]$ means the byte number $i$ of key K, starting with 0 as first index.
+
+Name these startup parameters as ${\cal I}_{DL_0}$ (Initial Data Loop 1)
+
+\subsubsection{Step from $n-1$ to $n$}
+
+\nopagebreak
+\begin{eqnarray}
+ k_{i_n} & = & k_{i_{n-1}} + 9\\
+ k_{j_n} & = & k_{j_{n-1}} + 9\\
+ k_{l_n} & = & k_{l_{n-1}} + 9\\
+\nonumber \\
+ I_{i_n} & = & K[k_{i_n}] * 256^2 + K[k_{i_n}+1] * 256 + K[k_{i_n}+2] \\
+ I_{j_n} & = & K[k_{j_n}] * 256^2 + K[k_{j_n}+1] * 256 + K[k_{j_n}+2] \\
+ I_{l_n} & = & K[k_{l_n}] * 256^2 + K[k_{l_n}+1] * 256 + K[k_{l_n}+2] \\
+\nonumber \\
+ i_n & = & i_{n-1} + I_{i_n}\\
+ j_n & = & j_{n-1} + I_{j_n}\\
+ l_n & = & l_{n-1} + I_{l_n}\\
+\nonumber \\
+ mul_{n} & = & P_r[i_n]  \\
+ mod_{n} & = & P_r[j_n]  \\
+ add_{n} & = & P_r[l_n]  \\
+\nonumber \\
+ a_n & = & ((mul_n * a_{n-1} + add_n) \; \% \; mod_n) \; \% \; length
+\end{eqnarray}
+
+$P_r[i]$ means the prime number $i$ of prime number list, starting
+with 0 as first index. $length$ is the length (in bits!) of the data block
+$D$ to crypt. Maximum for $length$ is $P_rmax$. If one of the indices
+$k_*$ or $i_*$ runs out of bounds, just use modulo operator (\%) to
+make them fit into the vector:
+
+\begin{eqnarray}
+k_{max} & = & \mbox{max-index}(K)\\
+k_*     & = & k_* \; \% \; (k_{max}+1) \qquad \mbox{if} \;\; k_* \; \ge \; k_{max}\\
+\nonumber \\
+i_{max} & = & \mbox{max-index}(P_r)\\
+i_*     & = & i_* \; \% \; (i_{max}+1) \qquad \; \mbox{if} \;\; i_* \; \ge \; i_{max}
+\end{eqnarray}
+
+Name the $
+ k_{i_n},
+ k_{j_n},
+ k_{l_n},
+ i_n,
+ j_n,
+ l_n$ for the maximal $n$ and the last calculated $a_m$
+(which is not set by a $a_{\delta_*}$) as 
+${\cal I}_{DL_s}$ where s is the number of calls to $P_{sc}(...)$,
+which will be defined in the following.
+
+\subsubsection{Create Transformation Vector $T$:}
+
+Now build the Transformation Vector $T$ and remember all used
+positions. If a position has been already used, search for one free up
+starting at $a_{\delta_{m-1}}$. Let the index found name with
+$a_{\delta_m}$. Use $a_{\delta_m}$ instead of $a_n$ to calculate $a_{n+1}$
+and increment $m$ by one.
+
+Next create $T$ by:
+
+\begin{eqnarray}
+ T[a_i] = i-1 \qquad\forall i
+\end{eqnarray}
+
+If $T[i]$ is initialized by $-1 \; \forall i$, it is not needed to
+store information about already used $a_n$ in an extra vector, because
+unused values for $a_n$ can be identified as $T[a_n] \,= \, -1$.
+
+\subsubsection{Shuffle Data $D$:}
+
+Calc a new data array $D_c$ as:
+
+\begin{eqnarray}
+\mbox{Bit}(i) \; \mbox{of} \; D_c \; = \; \mbox{Bit}(T[i]) \; \mbox{of} \; D \qquad \forall i 
+\end{eqnarray}
+
+Name the procedure to calc the value of $D_c$ as
+
+\begin{eqnarray}
+ P_{sc}({\cal I}_{DL_*}, K, D) := D_c
+\end{eqnarray}
+
+\subsection{First Shuffle The Key}
+
+Create a vector $T$ with length($T$) = length($M_c$) * 8 to shuffle
+the bits of the key K.  Use the shuffled key $K_{s-1}$ and ${\cal
+I}_{DL_{s-1}}$ to get $K_s$ by
+
+\begin{eqnarray}
+K_s = P_{sc}({\cal I}_{DL_{s-1}}, K_{s-1}, K_{s-1})
+\end{eqnarray}
+
+Repeat this at least 10 times to shuffle the bits of the key. 
+
+\subsection{Next Shuffle The Data}
+
+Use $P_{sc}({\cal I}_{DL_*}, K_s, D_*)$ to shuffle the Data $D_0$:
+
+\begin{eqnarray}
+D_i := P_{sc}({\cal I}_{DL_{s+i-1}}, K_s, D_{i-1}) \qquad \forall \; i
+\end{eqnarray}
+
+Do this at least 2 times.
+
+\subsection{Decryption}
+
+Just calculate the transformation vector $T$ as described in the former
+sections. First shuffle the key, then calc $T_{i_{max}}$ for the data,
+but donot shuffle it, just calc the transformation vector. 
+
+\begin{eqnarray}
+T_i =  P_{st}({\cal I}_{DL_{s+i-1}}, K_s, T_{i-1}) \qquad \forall \; i
+\end{eqnarray}
+
+(named $P_{st}$ to be different from $P_{sc}$) with
+
+\begin{eqnarray}
+T_0[j] = j \qquad \forall \; j
+\end{eqnarray}
+
+Then simply move bit of position $b$ of $D_c$ back to
+position $T_{i_{max}}[b]$ in $D$.
+
+\subsubsection{Preconditions for Decryption}
+
+To be able to do the decryption, you need the following informations:
+
+You have to know the key $K$, and therefore you need $RN$ (out of the
+encrypted file), the password $PW$ (user input at runtime) and all
+additional keys $K_i$. Also you need to know the $length$ (data block
+length in bits), the prime number list, the number of calls to
+$P_{sc}$ (encryption rounds) for the key and also the number of calls
+to $P_{sc}$ for the data $D_0$. All these parameters except the
+password may be stored at harddisk and should be exchanged directly
+(by USB stick, disc, CD, ...). Only $RN$ together with the encrypted
+data $D_c$ needs to be transmitted by every (unsecure) connection
+(WWW, email, ...).
+
+
+\section{Safeness\label{Safeness}\index{Safeness}}
+
+As you can see the algorithm is a symmetric one and full scalable. The
+key $K$ (and the password $PW$) is not combined with the data. There
+is no need to store $K$ or $PW$, only $RN$ has to be stored in the
+data, $K_i$ elsewhere.
+
+$RN$ has to be changed for every saving/encryption, so that every
+encryption even of the same file will become complete different to the
+former ones, because every time a different key $K$ is used.
+
+\subsection{Attacks}
+
+\subsubsection{Testing The Password Or Key Byte By Byte}
+is not possible because the key $K$ is shuffled at least 10 times, so
+that the bits of the first byte of the key are spread over the next
+(new) key. For every different startup key the bits of any key byte
+are shuffled to a new order, which gives a different key for the next
+of the 10 steps.
+
+\subsubsection{Abbreviate Decryption Calculation}
+is not possible, because $a_n$ has to be calculated by a recursive
+sequence, and so $a_0..a_{n-1}$ have to be known to calc $a_n$. Also
+in the case of duplicate values for $a_i$ and $a_n$, $a_n$ is replaced
+by $a_{\delta_m}$ and so it is not calculated out of $a_{n-1}$.
+
+\subsubsection{Abbreviate Decryption Rounds}
+is also not possible, because every encryption round uses the ${\cal
+I}_{DL_{s-1}}$ from the previous round as initial values to start the
+next round $s$, so different primes will be used for calculation of
+$a_i$ in every round and it will be different from the $a_i$ of the
+previous round. Therefore it is not possible to calc one round faster
+out of the former one, every value has to be calculated as given in
+(4)-(33).
+
+\subsubsection{Recalculation Of The Key If Knowing The Plain Text}
+is not possible, because the key is not combined with the data and the
+transformation vector $T$ is not recalculatable out of bits only.
+Knowing more pairs of plain/cipher texts doesn't help, every
+encryption uses a key $K$ different to the others because $RN$ is
+changed every time.
+
+\subsubsection{The Effort Of Brute Force Attacks}
+will be discussed in the following.
+ 
+\subsection{Everything Known But Password}
+
+All additional keys $K_i$ are known, the number of key and data
+encryption rounds and the block length also.
+
+In this case the strength of the encryption is only defined by the
+length of the password. A password of 20 chars with each of 100
+possibilities gives
+
+\begin{eqnarray}
+ 100^{20} = 10^{(2*20)} = 10^{40} \; \mbox{combinations}
+\end{eqnarray}
+
+One day has 60*60*24 = 86400 seconds and one decryption needs 10
+seconds at minimum, so at most 10000 decryptions could be done by a
+standard PC with 4.0 GHz per day, so a PC can calculate in a year
+
+\begin{eqnarray}
+  10^5   \;\mbox{(combinations per PC and day),} \\
+ * 365    \; \mbox{days per year} \\
+ = 3.65 * 10^{(2+5)} = 3.65 * 10^7,
+\end{eqnarray}
+
+which will be named ``computer year'' (like ``man year'').
+
+
+With 1,000,000,000 PCs calculating one year
+
+\begin{eqnarray}
+ 3.65*10^7   \;\mbox{(combinations per PC and year),} \\
+ * 10^9   \;\mbox{PCs} \;\; (1,000,000,000) \\
+ = 3.65 * 10^{(7+9)} = 3.65 * 10^{16},
+\end{eqnarray}
+
+passwords may be checked. So these enormous amount of PCs has to calculate
+
+\begin{eqnarray}
+   10^{40}/(3.65 * 10^{16}) \\
+ = 10^{24}/3.65 \\
+ >  2.739 * 10^{23} \mbox{years}
+\end{eqnarray}
+
+for all combinations, that are
+
+\begin{eqnarray}
+2.739 * 10^5 * 10^9 * 10^9 \; \mbox{years} \\
+ = 2.739 * 100,000 * 1,000,000,000 * 1,000,000,000 \; \mbox{years.}
+\end{eqnarray}
+
+When the PCs get faster, just do more rounds for encryption or use
+bigger files to keep the calculation time constant at 10 seconds.
+
+\subsection{Transmitted Data Only Known}
+
+The additional keys $K_i$ are unknown, the number of key and data
+encryption rounds and the block length may be known, the transmitted
+data are known ($D_c$ and $RN$). So the resulting key $K$ is
+unknown and therefore the number of combinations to test for keylength
+1 kByte are
+
+\begin{eqnarray}
+ 2^{8000} = 1024^{800} \; > \; 10^{800*3} \; = \; 10^{2400}\; \mbox{combinations}
+\end{eqnarray}
+
+AS you can see the effort if knowing the key is multiplied by
+$10^{2360}$ , and the additional effort, that would come from the
+unknown block lengths and the also unknown numbers of key and data
+encryption rounds isn't taken into account.
+
+So you need at minimum 
+
+\begin{eqnarray}
+10^{2400}/(3.65*10^7)\; > 2.739 * 10^{2392} \quad \mbox{computer years}
+\end{eqnarray}
+
+to decrypt the data. So it is not needed to vary block length, prime
+numbers or shuffle rounds to be secure for this case.
+
+\subsection{Encryption Of Files Longer Than Block Length}
+
+To get faster encryption of following blocks, only the shuffle of the
+data $D$ (bitwise transformation) can be done, so that the high costs
+of calculating the transformation vector $T$ can be left out.
+
+\subsection{Fast Erasing of Encrypted Data}
+
+If a cypher text should be unreadable, it is enough to delete one of
+its keys $K_e$. So if every cypher text is created using the base key
+part $K_B$, just wipe out this key part from disc/memory, what should
+require less than a second. The decryption then costs as many effort
+as if you would know the transmitted data only as described in the
+former section.
+
+\subsection{Minimal Size for Encrypted File}
+
+How to calculate the minimal size for a encrypted file with the same
+strength of encryption for unknown password is an interesting (but
+open) question. Possibly it is much smaller than 1,000,000 bits.
+
+
+
+
+\section{Use Cases}
+
+This algorithm is \textbf{not} designed to be used in chipcards or to
+encrypt data streams. It is designed to secure very critical data like
+logins, passwords, PIN numbers or some text that may be stored in one
+file up to 10 MBits (1.25 MBytes) like the source forge tool
+"PasswordSafe" does.
+
+
+
+
+\section{Performance and Memory}
+
+You need powerful hardware and lots of memory to encrypt and decrypt,
+but this is the main feature to hamper using brute force methods.
+
+The time needed to encrypt / decrypt will be 10 sec up to 2 min for a
+standard PC (with processor up to 4.0 GHz).
+
+You need only 1 KB more than the original size to store the random
+number in the encrypted file. But for good security, the size of the
+file should not be less than 1 MBit (128 kByte), better are 10 MBit
+(1.25 MByte).
+
+For an encryption of 1 MBit data memory needed for the encryption SW
+is betweeen 170 and 180 MByte (Perl at WinXP), 10 MBit needes
+ca. 700 MByte RAM. The C Implementation will be faster and needs
+smaller amounts of memory.
+
+Implementations in Perl and Python are already available, C is in
+preparation.
+
+%
+% ---- Bibliography ----
+%
+\begin{thebibliography}{}
+%
+\bibitem[Ba]{Ba}
+Ruedeger Baumann:
+CHIP Wissen: Programmieren mit PASCAL,
+1. Auflage 1980, Vogel-Verlag, Wuerzburg 
+
+\bibitem[Se]{Se}
+Gisbert W. Selke:
+Kryptographie,
+1. Auflage, O'Reilly Verlag, 2000, ISBN  3-89721-155-6
+
+\bibitem[Wi]{Wi}
+Wikipedia:
+Linear Congruential Generator,
+2006/12/10-13:10,\hfill\newline
+http://en.wikipedia.org/wiki/Linear\_congruential\_generator
+
+
+\end{thebibliography}
+%\clearpage
+%\addtocmark[2]{Author Index} % additional numbered TOC entry
+%\renewcommand{\indexname}{Author Index}
+%\printindex
+%\clearpage
+%\addtocmark[2]{Subject Index} % additional numbered TOC entry
+%\markboth{Subject Index}{Subject Index}
+%\renewcommand{\indexname}{Subject Index}
+%\input{subjidx.ind}
+\end{document}
