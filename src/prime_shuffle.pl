@@ -6,14 +6,26 @@
 #
 # Ralf Peine
 #
-# Sat Oct 07 23:37:35 2006
+# 25.11.2015
 
 use strict;
 use warnings;
 
 $| = 1;
 
+my $action = shift;
+my $test_mode = lc($action) eq '-test';
+
+$action = shift if $test_mode;
+
+my $inpFile = shift;
+my $outFile = shift;
+
 my $startTime = time();
+my $actTime;
+
+my $passWord = $test_mode ? 'abcdefghI123%' : '';
+
 print "# Start ".localtime($startTime)."\n";
 
 require 'prime_nbrs.pl';
@@ -22,10 +34,8 @@ require 'prime_nbrs.pl';
 # load vector of prime numbers later (after compiling to count time)
 # require $primeNbrFile;
 
-my $actTime;
-
-$actTime = time();
-print "# compiled\t". ($actTime - $startTime)."\n";
+# $actTime = time();
+# print "# compiled\t". ($actTime - $startTime)."\n";
 
 #===============================================================================
 #
@@ -289,17 +299,17 @@ sub shuffleBits {
     my $bit;
     
     foreach $si (0..$shuffleVecLen-1) {
-	$oci = int($si / 8);
-	$obi = $bitVal[$si % 8];
-	$mi = $$shuffleVecRef[$si];
-	$mci = int($mi / 8);
-	$mbi = $bitVal[$mi % 8];
+	    $oci = int($si / 8);
+	    $obi = $bitVal[$si % 8];
+	    $mi = $shuffleVecRef->[$si];
+	    $mci = int($mi / 8);
+	    $mbi = $bitVal[$mi % 8];
 	
-	$bit = (ord($$origVecRef[$oci]) & $obi) ? 1 : 0;
-	$resultVec[$mci] = chr(0) unless defined $resultVec[$mci];
-	$resultVec[$mci] = chr(ord ($resultVec[$mci]) | ($bit ? $mbi: 0));
+	    $bit = (ord($origVecRef->[$oci]) & $obi) ? 1 : 0;
+	    $resultVec[$mci] = chr(0) unless defined $resultVec[$mci];
+	    $resultVec[$mci] = chr(ord ($resultVec[$mci]) | ($bit ? $mbi: 0));
 
-	print "." unless ($si+1) % 100000;
+	    print "." unless ($si+1) % 100000;
     }
     return \@resultVec;
 }
@@ -447,10 +457,6 @@ sub min {
 
 #=== main ======================================================================
 
-my $action = shift;
-my $inpFile = shift;
-my $outFile = shift;
-
 my %initHash;
 
 my @primeNumbers = &primeNumbers();
@@ -502,11 +508,12 @@ if ($action eq "-crypt") {
 # --- add password to key -------------------------------------
 
 # --- input should become invisible ---------------------------
-print "Input password: ";
-my $passWord = <STDIN>;
-# my $passWord = "abcdefghI123%";
+unless ($passWord) {
+    print "Input password: ";
+    $passWord = <STDIN>;
 
-chomp $passWord;
+    chomp $passWord;
+}
 
 my $keyRef = &combineKeyWithPassword(\@key, $passWord);
 # print join (' ', @$keyRef[0..30], "\n");
