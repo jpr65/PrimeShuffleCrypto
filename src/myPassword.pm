@@ -32,7 +32,6 @@ if ($termReadKeyLoaded) {
         }
 EnDe
 ;
-    print $readPasswordAction;
     $readPasswordAction = eval($readPasswordActionStr);
 }
 
