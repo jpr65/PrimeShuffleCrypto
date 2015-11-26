@@ -13,6 +13,7 @@ use warnings;
 
 $| = 1;
 
+use Term::ReadKey;
 use PSC;
 
 my @argv_backup = @ARGV;
@@ -68,7 +69,7 @@ my $outFile = shift;
 my $startTime = time();
 my $actTime;
 
-my $passWord = $test_mode ? 'abcdefghI123%' : '';
+my $password = $test_mode ? 'abcdefghI123%' : '';
 
 do_die "No input file given!" unless $inpFile;
 do_die "No output file given!" unless $outFile;
@@ -77,15 +78,20 @@ do_die "can't find file to read in: $inpFile" unless -e $inpFile;
 
 print "# Start ".localtime($startTime)."\n";
 
-unless ($passWord) {
+unless ($password) {
     print "Input password: ";
-    $passWord = <STDIN>;
-
-    chomp $passWord;
+    
+    ReadMode('noecho');
+    $password = ReadLine(0);
+    
+    chomp $password;
+    print "\n";
 }
 
+print "# start ...\n";
+
 my $done = eval {
-    PSC::run($action, $passWord, $inpFile, $outFile);
+    PSC::run($action, $password, $inpFile, $outFile);
     1;
 };
 
