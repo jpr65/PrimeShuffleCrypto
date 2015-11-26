@@ -23,6 +23,8 @@ if (lc($file) eq '-chars') {
 
 # ===============================================================================
 
+print "# Read first $chars chars of file $file ... \n\n";
+
 open (INP, $file) or die "can't read $file: $!\n";
 
 # binmode INP;
