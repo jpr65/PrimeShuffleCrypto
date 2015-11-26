@@ -1,1 +1,1 @@
-perl psc.pl -crypt testData.txt testData.txt.psc
+perl psc.pl -crypt %*
