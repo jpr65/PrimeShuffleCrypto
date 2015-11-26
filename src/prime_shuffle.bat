@@ -1,3 +1,3 @@
-perl prime_shuffle.pl -crypt testData.txt testData.txt.psc
-perl prime_shuffle.pl -decrypt testData.txt.psc testData.dec.txt
+perl psc.pl -crypt testData.txt testData.txt.psc
+perl psc.pl -decrypt testData.txt.psc testData.dec.txt
 pause

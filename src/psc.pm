@@ -481,7 +481,7 @@ if (   $action eq "-crypt"
     @key = &genRandomKey($keyLength);
 
 } 
-elsif (   $action eq "-decrypt "
+elsif (   $action eq "-decrypt"
        or $action eq "-d"
 ) {
     print "# decrypt\n";
