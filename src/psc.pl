@@ -13,7 +13,7 @@ use warnings;
 
 $| = 1;
 
-use Term::ReadKey;
+use MyPassword;
 use PSC;
 
 my @argv_backup = @ARGV;
@@ -79,13 +79,7 @@ do_die "can't find file to read in: $inpFile" unless -e $inpFile;
 print "# Start ".localtime($startTime)."\n";
 
 unless ($password) {
-    print "Input password: ";
-    
-    ReadMode('noecho');
-    $password = ReadLine(0);
-    
-    chomp $password;
-    print "\n";
+    $password = MyPassword::Read("Input password: ");
 }
 
 print "# start ...\n";

@@ -13,6 +13,8 @@ use warnings;
 
 $| = 1;
 
+use Getopt::Long;
+
 my $file  = shift;
 my $chars = 100; 
 
