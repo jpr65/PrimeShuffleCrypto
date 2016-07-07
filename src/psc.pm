@@ -60,7 +60,7 @@ sub primeShuffle {
 
     # --- init first result vector ---
     foreach my $ti (0..$sx+1) {
-	$ret1[$ti] = $ti;
+	    $ret1[$ti] = $ti;
     }
 
     # --- use references to move arrays around ---
@@ -70,21 +70,21 @@ sub primeShuffle {
     # --- init --------------------
 
     unless ($initRef  &&  defined $initRef->{'a'}) {
-	$a  = (((((($$kr[0] << 8) + $$kr[1]) << 8) + $$kr[2]) << 8) + $$kr[3]) % $sx;
+	    $a  = (((((($$kr[0] << 8) + $$kr[1]) << 8) + $$kr[2]) << 8) + $$kr[3]) % $sx;
 
         # print "a=$a\tpl=$pl\tkl=$kl\n";
 
-	$ia = 0;
-	$im = 0;
-	$id = 0;
-	$initRef = {} unless $initRef;
-	$ik = 4;
+	    $ia = 0;
+	    $im = 0;
+	    $id = 0;
+	    $initRef = {} unless $initRef;
+	    $ik = 4;
     } else {
-	$a  = $initRef->{'a'};
-	$ia = $initRef->{'ia'};
-	$im = $initRef->{'im'};
-	$id = $initRef->{'id'};
-	$ik = 0;
+	    $a  = $initRef->{'a'};
+	    $ia = $initRef->{'ia'};
+	    $im = $initRef->{'im'};
+	    $id = $initRef->{'id'};
+	    $ik = 0;
     }
     # print "$initRef\n";
 
@@ -92,134 +92,134 @@ sub primeShuffle {
     my $sinv = "1"; # search direction if duplicates
     foreach $r (1..$sr) {
 
-	# --- calc shuffle vectors --------------------------------------------------------
+	    # --- calc shuffle vectors --------------------------------------------------------
 
-	# --- start anywhere with duplicate exchange ---
-	my $axs = (((($kr->[$ik+0] << 8) + $kr->[$ik+1]) << 8) + $kr->[$ik+2]) % $sx;
-	# print "\$xas = $axs\n\n";
-	my $axb = $axs;
-	my $axt = $axs;
-	my $i   = 0;
+	    # --- start anywhere with duplicate exchange ---
+	    my $axs = (((($kr->[$ik+0] << 8) + $kr->[$ik+1]) << 8) + $kr->[$ik+2]) % $sx;
+	    # print "\$xas = $axs\n\n";
+	    my $axb = $axs;
+	    my $axt = $axs;
+	    my $i   = 0;
 
-	$ik += 3;
+	    $ik += 3;
 
-	while ($i < $smx) {
+	    while ($i < $smx) {
 
-	    # --- get next index values for prime number array ----------------------------------------------
-	    $ia = ($ia + ((($kr->[$ik+0] << 8) + $kr->[$ik+1]) << 8) + $kr->[$ik+2]) % $pl;
-	    $im = ($im + ((($kr->[$ik+3] << 8) + $kr->[$ik+4]) << 8) + $kr->[$ik+5]) % $pl;
-	    $id = ($id + ((($kr->[$ik+6] << 8) + $kr->[$ik+7]) << 8) + $kr->[$ik+8]) % $pl;
+	        # --- get next index values for prime number array ----------------------------------------------
+	        $ia = ($ia + ((($kr->[$ik+0] << 8) + $kr->[$ik+1]) << 8) + $kr->[$ik+2]) % $pl;
+	        $im = ($im + ((($kr->[$ik+3] << 8) + $kr->[$ik+4]) << 8) + $kr->[$ik+5]) % $pl;
+	        $id = ($id + ((($kr->[$ik+6] << 8) + $kr->[$ik+7]) << 8) + $kr->[$ik+8]) % $pl;
 	    
-	    #print "\n$ian - $im - $id # ", join (" ", @$kr[$ik..$ik+2]) , " | $ian = ($ia + ($kr->[$ik+0] << 8 + $kr->[$ik+1]) << 8 + $kr->[$ik+2]) % $pl\n",
-	    #    ($ia + ($kr->[$ik+0] * 256 + $kr->[$ik+1]) *256 + $kr->[$ik+2]) % $pl, "\n"
-	    #    unless $ian;
+	        #print "\n$ian - $im - $id # ", join (" ", @$kr[$ik..$ik+2]) , " | $ian = ($ia + ($kr->[$ik+0] << 8 + $kr->[$ik+1]) << 8 + $kr->[$ik+2]) % $pl\n",
+	        #    ($ia + ($kr->[$ik+0] * 256 + $kr->[$ik+1]) *256 + $kr->[$ik+2]) % $pl, "\n"
+	        #    unless $ian;
 
-	    #$ia = $ian;
+	        #$ia = $ian;
 
-	    # --- get prime numbers --------------------------------------------------------
-	    $pa = $pr->[$ia];
-	    $pm = $pr->[$im];
-	    $pd = $pr->[$id];
+	        # --- get prime numbers --------------------------------------------------------
+	        $pa = $pr->[$ia];
+	        $pm = $pr->[$im];
+	        $pd = $pr->[$id];
 
-	    # --- get next iterator number -------------------------------------------------
-	    $ac = $a = ((($a + $pa) * $pm) % $pd) % $sx;
+	        # --- get next iterator number -------------------------------------------------
+	        $ac = $a = ((($a + $pa) * $pm) % $pd) % $sx;
 
-	    # --- if already used, search next unused value up or down starting at the middle ---------
-	    if (defined $ua[$a]) {
-		if ($sinv > 0) { # search from bottom
-		    while (defined ($ua[$axb])) {
-			while ($axb < $sx) {
-			    last unless defined ($ua[$axb]);
-			    $axb++;
-			}
-			$axb = 0 if $axb >= $sx;
-		    }
-		    # print "\n$i: $a -> $axb ";
-		    $a = $axb;
-		} else { # search from top
-		    while (defined ($ua[$axt])) {
-			while ($axt >= 0) {
-			    last unless defined ($ua[$axt]);
-			    $axt--;
-			}
-			$axt = $sx-1 if $axt < 0;
-		    }
-		    # print "\n$i: $a -> $axt ";
-		    $a = $axt;
-		}
-		$sinv = -$sinv;
-	    # } else {
-		# print "$i -> $a\n";
+	        # --- if already used, search next unused value up or down starting at the middle ---------
+	        if (defined $ua[$a]) {
+		        if ($sinv > 0) { # search from bottom
+		            while (defined ($ua[$axb])) {
+			            while ($axb < $sx) {
+			                last unless defined ($ua[$axb]);
+			                $axb++;
+			            }
+			            $axb = 0 if $axb >= $sx;
+		            }
+		            # print "\n$i: $a -> $axb ";
+		            $a = $axb;
+		        } else { # search from top
+		            while (defined ($ua[$axt])) {
+			            while ($axt >= 0) {
+			                last unless defined ($ua[$axt]);
+			                $axt--;
+			            }
+			            $axt = $sx-1 if $axt < 0;
+		            }
+		            # print "\n$i: $a -> $axt ";
+		            $a = $axt;
+		        }
+		        $sinv = -$sinv;
+	        # } else {
+		    # print "$i -> $a\n";
+	        }
+
+	        # --- store a value ---
+	        $ua[$a] = $i;
+
+	        # --- prepare to get next indexes ---
+	        $ik += 9;
+	        $ik = $ik % $kl if $ik >= $kl;
+
+	        # --- show that something is working ---
+	        if ($ip & 65536) {
+		        print ".";
+		        $ip = "0";
+	        }
+
+	        $ip++;
+	        $i++;
 	    }
 
-	    # --- store a value ---
-	    $ua[$a] = $i;
+	    # print "\nround $r, max: $i ==============================\n";
 
-	    # --- prepare to get next indexes ---
-	    $ik += 9;
-	    $ik = $ik % $kl if $ik >= $kl;
+	    # --- shrink @ua to used fields only, max index afterwards has to be $smx -------------------------------------
 
-	    # --- show that something is working ---
-	    if ($ip & 65536) {
-		print ".";
-		$ip = "0";
-	    }
-
-	    $ip++;
-	    $i++;
-	}
-
-	# print "\nround $r, max: $i ==============================\n";
-
-	# --- shrink @ua to used fields only, max index afterwards has to be $smx -------------------------------------
-
-	my $ui = -1; # search index
-	my $ii =  0; # write index
+	    my $ui = -1; # search index
+	    my $ii =  0; # write index
 	
-	while ($ii < $smx) {
-	    # search next not used array index
-	    while (defined $ua[$ii]) {
-		$ii++;
-	    }
-	    # search index $ui has to be greater than write index $ii
-	    if ($ui < $ii) {
-		$ui = $ii;
-	    }
-	    # search next used field of @ua
-	    while (!defined $ua[$ui]) {
-		$ui++;
-	    }
-	    # fire exit: max reached for $ui, just to be sure
-	    last if ($ui >= $sx);
+	    while ($ii < $smx) {
+	        # search next not used array index
+	        while (defined $ua[$ii]) {
+		        $ii++;
+	        }
+	        # search index $ui has to be greater than write index $ii
+	        if ($ui < $ii) {
+		        $ui = $ii;
+	        }
+	        # search next used field of @ua
+	        while (!defined $ua[$ui]) {
+		        $ui++;
+	        }
+	        # fire exit: max reached for $ui, just to be sure
+	        last if ($ui >= $sx);
 
-	    # move value to smallest unused
-	    if ($ui > $ii) {
-		$ua[$ii] = $ua[$ui];
-		$ua[$ui] = undef;
-	    }
+	        # move value to smallest unused
+	        if ($ui > $ii) {
+		        $ua[$ii] = $ua[$ui];
+		        $ua[$ui] = undef;
+	        }
 
-	    $ii++;
-	    $ui++;
-	}
+	        $ii++;
+	        $ui++;
+	    }
 	
-	# --- build the new translation vector -------------------------------------------------------
+	    # --- build the new translation vector -------------------------------------------------------
 
-	foreach my $ti (0..$smx-1) {
-	    # print " \$retRef2->[$ti] := \$ua[$retRef1->[$ti]] = " if $retRef1->[$ti] > 7900  &&  $retRef1->[$ti] < 8000;
-	    $retRef2->[$ti] = $ua[$retRef1->[$ti]];
-	    $ua[$retRef1->[$ti]] = undef;
-	    # print "$retRef2->[$ti]\t\t v ".($ti - $retRef2->[$ti])."\n" if $retRef1->[$ti] > 7900  &&  $retRef1->[$ti] < 8000;
-	}
+	    foreach my $ti (0..$smx-1) {
+	        # print " \$retRef2->[$ti] := \$ua[$retRef1->[$ti]] = " if $retRef1->[$ti] > 7900  &&  $retRef1->[$ti] < 8000;
+	        $retRef2->[$ti] = $ua[$retRef1->[$ti]];
+	        $ua[$retRef1->[$ti]] = undef;
+	        # print "$retRef2->[$ti]\t\t v ".($ti - $retRef2->[$ti])."\n" if $retRef1->[$ti] > 7900  &&  $retRef1->[$ti] < 8000;
+	    }
 
-	# --- exchange vectors ------------------------------------------------------------------------
+	    # --- exchange vectors ------------------------------------------------------------------------
 
-	my $href = $retRef2;
-	$retRef2 = $retRef1;
-	$retRef1 = $href;
+	    my $href = $retRef2;
+	    $retRef2 = $retRef1;
+	    $retRef1 = $href;
 
-	# print "\n\$a  = $a\n\$ac = $ac\n\$ia=$ia\n\$im=$im\n\$id=$id\n";
+	    # print "\n\$a  = $a\n\$ac = $ac\n\$ia=$ia\n\$im=$im\n\$id=$id\n";
 
-	$a = $ac; # use last calced value
+	    $a = $ac; # use last calced value
     }
 
     # print join (" ", @$retRef1, "\n");
@@ -242,17 +242,17 @@ sub primeShuffle {
 # returns index list
 
 sub invertShuffle {
-     my $inpArrRef = shift;
-     my $inpArrLen = shift;
+    my $inpArrRef = shift;
+    my $inpArrLen = shift;
      
-     my @invArr;
-     $invArr[$inpArrLen] = "end";
+    my @invArr;
+    $invArr[$inpArrLen] = "end";
      
-     foreach my $i (0..$inpArrLen-1) {
-	$invArr[$$inpArrRef[$i]] = $i;
-     }
+    foreach my $i (0..$inpArrLen-1) {
+	    $invArr[$$inpArrRef[$i]] = $i;
+    }
      
-     return \@invArr;
+    return \@invArr;
 }
 
 #===============================================================================
@@ -308,7 +308,7 @@ sub cmpArrRefs
     my $len2cmp = shift;
     
     foreach my $i (0..$len2cmp-1) {
-	print "diff $i: $$arrRef1[$i] != $$arrRef2[$i]\n" if $$arrRef1[$i] != $$arrRef2[$i];
+	    print "diff $i: $$arrRef1[$i] != $$arrRef2[$i]\n" if $$arrRef1[$i] != $$arrRef2[$i];
     }
 }
 
@@ -324,8 +324,8 @@ sub genRandomKey {
 
     my @key;
     foreach my $i (0..$keyLength-1) {
-	$key[$i] = int(rand() * 256);
-	# $key[$i] = chr($i % 256);
+	    $key[$i] = int(rand() * 256);
+	    # $key[$i] = chr($i % 256);
     }
 
     return @key;
@@ -401,25 +401,25 @@ sub shuffleKey {
     print "# shuffle keys   ";
     
     foreach my $ki (1..$keyIterNbr) {
-	$shuffleKeyArrRef = &primeShuffle($shuffleKeyArrLen, $calcKeyRef, $primeNumberRef, 4, $initRef);
-	# print "$shuffleKeyArrRef  \$#\$calcKeyRef = $#$calcKeyRef\n";
-	# $invertShuffleKeyArrRef = &invertShuffle($shuffleKeyArrRef, $shuffleKeyArrLen);
+	    $shuffleKeyArrRef = &primeShuffle($shuffleKeyArrLen, $calcKeyRef, $primeNumberRef, 4, $initRef);
+	    # print "$shuffleKeyArrRef  \$#\$calcKeyRef = $#$calcKeyRef\n";
+	    # $invertShuffleKeyArrRef = &invertShuffle($shuffleKeyArrRef, $shuffleKeyArrLen);
 	
-	foreach my $i (0..$keyLength-1) {
-	    $$calcKeyRef[$i] = chr($$calcKeyRef[$i]);
-	}
+	    foreach my $i (0..$keyLength-1) {
+	        $$calcKeyRef[$i] = chr($$calcKeyRef[$i]);
+	    }
 	
-	$calcKeyRef = &shuffleBits($calcKeyRef, $keyLength, $shuffleKeyArrRef, $shuffleKeyArrLen);
-	# my $oldKeyRef = &shuffleBits($calcKeyRef, $keyLength, $invertShuffleKeyArrRef, $shuffleKeyArrLen);
+	    $calcKeyRef = &shuffleBits($calcKeyRef, $keyLength, $shuffleKeyArrRef, $shuffleKeyArrLen);
+	    # my $oldKeyRef = &shuffleBits($calcKeyRef, $keyLength, $invertShuffleKeyArrRef, $shuffleKeyArrLen);
 	
-	foreach my $i (0..$keyLength-1) {
-	    $$calcKeyRef[$i] = ord($$calcKeyRef[$i]);
-	    # $$oldKeyRef[$i] = ord($$oldKeyRef[$i]);
-	}
-	# &cmpArrRefs(\@key, $oldKeyRef, $keyLength) if $ki == 1;
-	# print join (' ', '#', @$oldKeyRef[60..80], "\n\n");
-	# print join (' ', '#', @$calcKeyRef[60..80], "\n");
-	print ".";
+	    foreach my $i (0..$keyLength-1) {
+	        $$calcKeyRef[$i] = ord($$calcKeyRef[$i]);
+	        # $$oldKeyRef[$i] = ord($$oldKeyRef[$i]);
+	    }
+	    # &cmpArrRefs(\@key, $oldKeyRef, $keyLength) if $ki == 1;
+	    # print join (' ', '#', @$oldKeyRef[60..80], "\n\n");
+	    # print join (' ', '#', @$calcKeyRef[60..80], "\n");
+	    print ".";
     }
 
     # print join ("\n", @$shuffleKeyArrRef[0..100], "\n");
@@ -442,167 +442,168 @@ sub min {
 
 sub run {
 
-my $action   = shift;
-my $passWord = shift;
+    my $action   = shift;
+    my $passWord = shift;
 
-my $inpFile  = shift;
-my $outFile  = shift;
+    my $inpFile  = shift;
+    my $outFile  = shift;
 
-my %initHash;
+    my %initHash;
 
-my @primeNumbers = &primeNumbers();
+    my @primeNumbers = &primeNumbers();
 
-# foreach my $loop (0..100) {
+    # foreach my $loop (0..100) {
 
-my $crypt = 'true';
+    my $crypt = 'true';
 
-my @data;
-my @key;
-my $keyLength = 1000;
-my $keyIterNbr = 10;
-my $shuffleRounds = 1;
-# my $maxNumbers = 1000;
-my $maxNumbers = 1000000;
+    my @data;
+    my @key;
+    my $keyLength = 1000;
+    my $keyIterNbr = 10;
+    my $shuffleRounds = 1;
+    # my $maxNumbers = 1000;
+    my $maxNumbers = 1000000;
 
-my $printCharNbrs = 50;
+    my $printCharNbrs = 50;
 
 # --- open files ----------------------------------------------------------
 
-open (INP,  $inpFile) or die "can't read $inpFile: $!\n";
-open (OUTP, ">$outFile") or die "can't write $outFile: $!\n";
+    open (INP,  $inpFile) or die "can't read $inpFile: $!\n";
+    open (OUTP, ">$outFile") or die "can't write $outFile: $!\n";
 
-binmode INP;
-binmode OUTP;
+    binmode INP;
+    binmode OUTP;
 
-if (   $action eq "-crypt"
-    or $action eq "-c"
-) {
-    print "# crypt\n";
-    @key = &genRandomKey($keyLength);
+    if (   $action eq "-crypt"
+        or $action eq "-c"
+    ) {
+        print "# crypt\n";
+        @key = &genRandomKey($keyLength);
 
-} 
-elsif (   $action eq "-decrypt"
-       or $action eq "-d"
-) {
-    print "# decrypt\n";
-    $crypt = '';
+    } 
+    elsif (   $action eq "-decrypt"
+           or $action eq "-d"
+    ) {
+        print "# decrypt\n";
+        $crypt = '';
 
-    # --- read in key ---
-    my $cryptData;
-    my $cread = read (INP, $cryptData, $keyLength);
-    print "# key chars read $cread == $keyLength\n";
-    foreach my $k (split (//, $cryptData)) {
-	    push (@key, ord($k));
+        # --- read in key ---
+        my $cryptData;
+        my $cread = read (INP, $cryptData, $keyLength);
+        print "# key chars read $cread == $keyLength\n";
+        foreach my $k (split (//, $cryptData)) {
+	        push (@key, ord($k));
+        }
+        # skip separator ||| between key and data,
+        # will be removed later in product version
+        my $dummy = "";
+        $cread = read (INP, $dummy, 3);
     }
-    # skip separator ||| between key and data,
-    # will be removed later in product version
-    my $dummy = "";
-    $cread = read (INP, $dummy, 3);
-}
-else {
-    die "unknown action '$action'";
-}
-
-# --- add password to key -------------------------------------
-
-my $keyRef = &combineKeyWithPassword(\@key, $passWord);
-# print join (' ', @$keyRef[0..30], "\n");
-
-# my $keyRef = \@key;
-
-
-#
-#
-# --- !!! missing !!! --- add other keys to key ---------------
-#
-#
-
-
-# --- shuffle key ----------------------------------------------------------
-
-$actTime = time();
-print "# ready to run\t". ($actTime - $startTime)."\n";
-
-my $calcKeyRef = &shuffleKey($keyIterNbr, $keyRef, $keyLength,  \@primeNumbers, \%initHash);
-
-# print "\n";
-# foreach my $k (sort(keys(%initHash))) {
-#     print "$k -> $initHash{$k}\n";
-# }
-# print "\n";
-
-# --- create shuffle vector ------------------------------------------------
-
-$actTime = time();
-print " key ready\t". ($actTime - $startTime)."\n# shuffle vector ";
-
-my $shuffleArrRef = &primeShuffle($maxNumbers, $calcKeyRef, \@primeNumbers, $shuffleRounds, \%initHash);
-
-# print "\n";
-# foreach my $k (sort(keys(%initHash))) {
-#     print "$k -> $initHash{$k}\n";
-# }
-# print "\n";
-
-# --- read in data from file -----------------------------------------------
-
-$actTime = time();
-print " ready\t". ($actTime - $startTime)."\n# shuffle data   ";
-
-# my $inp = "Das sind meine unverschlüsselten Testdaten!!";
-# my $inp = "These are my uncrypted test data, so it is!!";
-
-my $inp;
-
-my $bytesRead = read (INP, $inp, 125000);
-
-my @inpArr = split (//, $inp);
-
-my $inpArrLength = $maxNumbers / 8 + 10;
-my $inpStart = $#inpArr+1;
-
-# --- fill input data with random values up to min length ------------------
-
-foreach my $i (0..7) {
-    $inpArr[$inpArrLength+$i] = '';
-}
-$inpArr[$inpArrLength] = 'end';
-foreach my $i ($inpStart..$inpArrLength) {
-    $inpArr[$i] = chr(int(16 + rand() * 200.0));
-}
-
-# --- now crypt or decrypt data --------------------------------------------
-
-unless ($crypt) {
-    $shuffleArrRef =  &invertShuffle($shuffleArrRef, $maxNumbers);
-}
-
-my $resultArrRef = &shuffleBits(\@inpArr, $inpArrLength, $shuffleArrRef, $maxNumbers);
-
-if ($crypt) {
-    foreach my $k (@key[0..$keyLength-1]) {
-	print OUTP join ("", chr($k));
+    else {
+        die "unknown action '$action'";
     }
-    print OUTP "|||";
-}
 
-my $outputLength = $inpArrLength-1;
-while (! defined $$resultArrRef[$outputLength]) {
-    $outputLength--;
-    last if $outputLength < 0; # fire exit
-}
+    # --- add password to key -------------------------------------
 
-print OUTP join ("", @$resultArrRef[0..$outputLength]);
+    my $keyRef = &combineKeyWithPassword(\@key, $passWord);
+    # print join (' ', @$keyRef[0..30], "\n");
 
-close OUTP;
+    # my $keyRef = \@key;
 
-$actTime = time();
-print " ready\t". ($actTime - $startTime)."\n";
 
-#$startTime = time();
+    #
+    #
+    # --- !!! missing !!! --- add other keys to key ---------------
+    #
+    #
 
-#print "\n#--------------------------------------------------------------------------------\n\n";
-#}
+
+    # --- shuffle key ----------------------------------------------------------
+
+    $actTime = time();
+    print "# ready to run\t". ($actTime - $startTime)."\n";
+
+    my $calcKeyRef = &shuffleKey($keyIterNbr, $keyRef, $keyLength,  \@primeNumbers, \%initHash);
+
+    # print "\n";
+    # foreach my $k (sort(keys(%initHash))) {
+    #     print "$k -> $initHash{$k}\n";
+    # }
+    # print "\n";
+
+    # --- create shuffle vector ------------------------------------------------
+
+    $actTime = time();
+    print " key ready\t". ($actTime - $startTime)."\n# shuffle vector ";
+
+    my $shuffleArrRef = &primeShuffle($maxNumbers, $calcKeyRef, \@primeNumbers, $shuffleRounds,
+                                      \%initHash);
+
+    # print "\n";
+    # foreach my $k (sort(keys(%initHash))) {
+    #     print "$k -> $initHash{$k}\n";
+    # }
+    # print "\n";
+
+    # --- read in data from file -----------------------------------------------
+
+    $actTime = time();
+    print " ready\t". ($actTime - $startTime)."\n# shuffle data   ";
+
+    # my $inp = "Das sind meine unverschlüsselten Testdaten!!";
+    # my $inp = "These are my uncrypted test data, so it is!!";
+
+    my $inp;
+
+    my $bytesRead = read (INP, $inp, 125000);
+
+    my @inpArr = split (//, $inp);
+
+    my $inpArrLength = $maxNumbers / 8 + 10;
+    my $inpStart = $#inpArr+1;
+
+    # --- fill input data with random values up to min length ------------------
+
+    foreach my $i (0..7) {
+        $inpArr[$inpArrLength+$i] = '';
+    }
+    $inpArr[$inpArrLength] = 'end';
+    foreach my $i ($inpStart..$inpArrLength) {
+        $inpArr[$i] = chr(int(16 + rand() * 200.0));
+    }
+
+    # --- now crypt or decrypt data --------------------------------------------
+
+    unless ($crypt) {
+        $shuffleArrRef =  &invertShuffle($shuffleArrRef, $maxNumbers);
+    }
+
+    my $resultArrRef = &shuffleBits(\@inpArr, $inpArrLength, $shuffleArrRef, $maxNumbers);
+
+    if ($crypt) {
+        foreach my $k (@key[0..$keyLength-1]) {
+	        print OUTP join ("", chr($k));
+        }
+        print OUTP "|||";
+    }
+
+    my $outputLength = $inpArrLength-1;
+    while (! defined $$resultArrRef[$outputLength]) {
+        $outputLength--;
+        last if $outputLength < 0; # fire exit
+    }
+
+    print OUTP join ("", @$resultArrRef[0..$outputLength]);
+
+    close OUTP;
+
+    $actTime = time();
+    print " ready\t". ($actTime - $startTime)."\n";
+
+    #$startTime = time();
+
+    #print "\n#--------------------------------------------------------------------------------\n\n";
+    #}
 
 }
 
