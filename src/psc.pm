@@ -6,7 +6,7 @@
 #
 # Ralf Peine
 #
-# 25.11.2015
+# 18.07.2016
 
 use strict;
 use warnings;
@@ -27,13 +27,13 @@ require 'prime_nbrs.pl';
 # returns the bijective shuffle vector as an index list
 
 sub primeShuffle {
-    my $smx     = shift; # shuffle Max Index
-    my $kr      = shift; # key     Ref    
-    my $pr      = shift; # prime   Ref
+    my $smx     = shift; # shuffle max index
+    my $kr      = shift; # key     ref    
+    my $pr      = shift; # prime   ref
     my $sr      = shift; # shuffle rounds
     my $initRef = shift;
 
-    my $sx = $smx * 10; # shuffle Max Array Index, 10 Mio
+    my $sx = $smx * 10; # shuffle max array index, 10 Mio
     $sx    = min($sx, 10000000);
 
     my $ik; # index in key
@@ -54,7 +54,7 @@ sub primeShuffle {
     my @ret1; # result array 1 with vectors
     my @ret2; # result array 2 with vectors
     my @ua;   # vector with calced numbers
-    $ua[$sx+2] = "end";   # let array grow in one step
+    $ua  [$sx+2] = "end"; # let array grow in one step
     $ret1[$sx+2] = "end"; # let array grow in one step
     $ret2[$sx+2] = "end"; # let array grow in one step
 
@@ -70,7 +70,7 @@ sub primeShuffle {
     # --- init --------------------
 
     unless ($initRef  &&  defined $initRef->{'a'}) {
-	    $a  = (((((($$kr[0] << 8) + $$kr[1]) << 8) + $$kr[2]) << 8) + $$kr[3]) % $sx;
+	    $a  = (((((($kr->[0] << 8) + $kr->[1]) << 8) + $kr->[2]) << 8) + $kr->[3]) % $sx;
 
         # print "a=$a\tpl=$pl\tkl=$kl\n";
 
@@ -88,8 +88,8 @@ sub primeShuffle {
     }
     # print "$initRef\n";
 
-    my $r; # aktual round counter
-    my $sinv = "1"; # search direction if duplicates
+    my $r;          # actual round counter
+    my $sinv = "1"; # search direction switch
     foreach $r (1..$sr) {
 
 	    # --- calc shuffle vectors --------------------------------------------------------
@@ -105,17 +105,11 @@ sub primeShuffle {
 
 	    while ($i < $smx) {
 
-	        # --- get next index values for prime number array ----------------------------------------------
+	        # --- get next index values for prime number array -----------------------------
 	        $ia = ($ia + ((($kr->[$ik+0] << 8) + $kr->[$ik+1]) << 8) + $kr->[$ik+2]) % $pl;
 	        $im = ($im + ((($kr->[$ik+3] << 8) + $kr->[$ik+4]) << 8) + $kr->[$ik+5]) % $pl;
 	        $id = ($id + ((($kr->[$ik+6] << 8) + $kr->[$ik+7]) << 8) + $kr->[$ik+8]) % $pl;
 	    
-	        #print "\n$ian - $im - $id # ", join (" ", @$kr[$ik..$ik+2]) , " | $ian = ($ia + ($kr->[$ik+0] << 8 + $kr->[$ik+1]) << 8 + $kr->[$ik+2]) % $pl\n",
-	        #    ($ia + ($kr->[$ik+0] * 256 + $kr->[$ik+1]) *256 + $kr->[$ik+2]) % $pl, "\n"
-	        #    unless $ian;
-
-	        #$ia = $ian;
-
 	        # --- get prime numbers --------------------------------------------------------
 	        $pa = $pr->[$ia];
 	        $pm = $pr->[$im];
@@ -124,7 +118,8 @@ sub primeShuffle {
 	        # --- get next iterator number -------------------------------------------------
 	        $ac = $a = ((($a + $pa) * $pm) % $pd) % $sx;
 
-	        # --- if already used, search next unused value up or down starting at the middle ---------
+	        # --- if already used, search next unused value up or down ---------------------
+            # --- starting at the middle ---------------------------------------------------
 	        if (defined $ua[$a]) {
 		        if ($sinv > 0) { # search from bottom
 		            while (defined ($ua[$axb])) {
@@ -132,7 +127,6 @@ sub primeShuffle {
 			                last unless defined ($ua[$axb]);
 			                $axb++;
 			            }
-			            $axb = 0 if $axb >= $sx;
 		            }
 		            # print "\n$i: $a -> $axb ";
 		            $a = $axb;
@@ -142,7 +136,6 @@ sub primeShuffle {
 			                last unless defined ($ua[$axt]);
 			                $axt--;
 			            }
-			            $axt = $sx-1 if $axt < 0;
 		            }
 		            # print "\n$i: $a -> $axt ";
 		            $a = $axt;
@@ -169,46 +162,21 @@ sub primeShuffle {
 	        $i++;
 	    }
 
-	    # print "\nround $r, max: $i ==============================\n";
+        # print "\nround $r, max: $i ==============================\n";
 
-	    # --- shrink @ua to used fields only, max index afterwards has to be $smx -------------------------------------
+        shrink_ua(\@ua, $smx, $sx);
 
-	    my $ui = -1; # search index
-	    my $ii =  0; # write index
-	
-	    while ($ii < $smx) {
-	        # search next not used array index
-	        while (defined $ua[$ii]) {
-		        $ii++;
-	        }
-	        # search index $ui has to be greater than write index $ii
-	        if ($ui < $ii) {
-		        $ui = $ii;
-	        }
-	        # search next used field of @ua
-	        while (!defined $ua[$ui]) {
-		        $ui++;
-	        }
-	        # fire exit: max reached for $ui, just to be sure
-	        last if ($ui >= $sx);
-
-	        # move value to smallest unused
-	        if ($ui > $ii) {
-		        $ua[$ii] = $ua[$ui];
-		        $ua[$ui] = undef;
-	        }
-
-	        $ii++;
-	        $ui++;
-	    }
-	
 	    # --- build the new translation vector -------------------------------------------------------
 
 	    foreach my $ti (0..$smx-1) {
-	        # print " \$retRef2->[$ti] := \$ua[$retRef1->[$ti]] = " if $retRef1->[$ti] > 7900  &&  $retRef1->[$ti] < 8000;
-	        $retRef2->[$ti] = $ua[$retRef1->[$ti]];
+	        # print " \$retRef2->[$ti] := \$ua[$retRef1->[$ti]] = " 
+            #     --> if $retRef1->[$ti] > 7900  &&  $retRef1->[$ti] < 8000;
+	        
+            $retRef2->[$ti] = $ua[$retRef1->[$ti]];
 	        $ua[$retRef1->[$ti]] = undef;
-	        # print "$retRef2->[$ti]\t\t v ".($ti - $retRef2->[$ti])."\n" if $retRef1->[$ti] > 7900  &&  $retRef1->[$ti] < 8000;
+	        
+            # print "$retRef2->[$ti]\t\t v ".($ti - $retRef2->[$ti])."\n"
+            #     --> if $retRef1->[$ti] > 7900  &&  $retRef1->[$ti] < 8000;
 	    }
 
 	    # --- exchange vectors ------------------------------------------------------------------------
@@ -233,6 +201,43 @@ sub primeShuffle {
     $initRef->{'id'} = $id;
 
     return $retRef1;
+}
+
+sub shrink_ua {
+    my $ua  = shift; # ref of array to shrink
+    my $smx = shift; # shuffle Max Index
+    my $sx  = shift; # shuffle Max Array Index, 10 Mio
+
+	# --- shrink @ua to used fields only, max index afterwards has to be $smx ------
+
+	my $ui = -1; # search index
+	my $ii =  0; # write index
+	
+	while ($ii < $smx) {
+	    # search next not used array index
+	    while (defined $ua->[$ii]) {
+	        $ii++;
+	    }
+	    # search index $ui has to be greater than write index $ii
+	    if ($ui < $ii) {
+	        $ui = $ii;
+	    }
+	    # search next used field of @ua
+	    while (!defined $ua->[$ui]) {
+	        $ui++;
+	    }
+	    # fire exit: max reached for $ui, just to be sure
+	    last if ($ui >= $sx);
+
+        # move value to smallest unused
+        if ($ui > $ii) {
+            $ua->[$ii] = $ua->[$ui];
+            $ua->[$ui] = undef;
+        }
+
+        $ii++;
+        $ui++;
+    }
 }
 
 #===============================================================================
@@ -448,6 +453,8 @@ sub run {
     my $inpFile  = shift;
     my $outFile  = shift;
 
+    my $maxNumbers = shift || 1000000;
+
     my %initHash;
 
     my @primeNumbers = &primeNumbers();
@@ -461,8 +468,6 @@ sub run {
     my $keyLength = 1000;
     my $keyIterNbr = 10;
     my $shuffleRounds = 1;
-    # my $maxNumbers = 1000;
-    my $maxNumbers = 1000000;
 
     my $printCharNbrs = 50;
 
@@ -536,8 +541,15 @@ sub run {
     $actTime = time();
     print " key ready\t". ($actTime - $startTime)."\n# shuffle vector ";
 
-    my $shuffleArrRef = &primeShuffle($maxNumbers, $calcKeyRef, \@primeNumbers, $shuffleRounds,
+    my $shuffleArrRef;
+    if ($crypt){
+        $shuffleArrRef = &primeShuffle($maxNumbers, $calcKeyRef, \@primeNumbers, $shuffleRounds,
                                       \%initHash);
+    }
+    else {
+        $shuffleArrRef = &primeShuffle($maxNumbers, $calcKeyRef, \@primeNumbers, $shuffleRounds,
+                                      \%initHash);
+    }
 
     # print "\n";
     # foreach my $k (sort(keys(%initHash))) {

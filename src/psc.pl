@@ -6,7 +6,7 @@
 #
 # Ralf Peine
 #
-# 25.11.2015
+# 18.07.2016
 
 use strict;
 use warnings;
@@ -70,6 +70,7 @@ my $startTime = time();
 my $actTime;
 
 my $password = $test_mode ? 'abcdefghI123%' : '';
+my $maxNumbers = 0; # $test_mode ? 10000 : 0;
 
 do_die "No input file given!" unless $inpFile;
 do_die "No output file given!" unless $outFile;
@@ -85,7 +86,7 @@ unless ($password) {
 print "# start ...\n";
 
 my $done = eval {
-    PSC::run($action, $password, $inpFile, $outFile);
+    PSC::run($action, $password, $inpFile, $outFile, $maxNumbers);
     1;
 };
 
